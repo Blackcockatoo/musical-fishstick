@@ -79,11 +79,11 @@ export function applyGeneticModulation(
   const playfulnessMod = (personality.playfulness - 50) / 150;
 
   return {
-    resonance: clamp(baseDrives.resonance * (1 + disciplineMod * 0.3), 0, 1),
-    exploration: clamp(baseDrives.exploration * (1 + energyMod * 0.4 + curiosityMod * 0.6), 0, 1),
-    connection: clamp(baseDrives.connection * (1 + socialMod * 0.5 - independenceMod * 0.3), 0, 1),
-    rest: clamp(baseDrives.rest * (1 - energyMod * 0.3 - disciplineMod * 0.2), 0, 1),
-    expression: clamp(baseDrives.expression * (1 + playfulnessMod * 0.4), 0, 1),
+    resonance: clamp((baseDrives.resonance ?? 0.5) * (1 + disciplineMod * 0.3), 0, 1),
+    exploration: clamp((baseDrives.exploration ?? 0.5) * (1 + energyMod * 0.4 + curiosityMod * 0.6), 0, 1),
+    connection: clamp((baseDrives.connection ?? 0.5) * (1 + socialMod * 0.5 - independenceMod * 0.3), 0, 1),
+    rest: clamp((baseDrives.rest ?? 0.5) * (1 - energyMod * 0.3 - disciplineMod * 0.2), 0, 1),
+    expression: clamp((baseDrives.expression ?? 0.5) * (1 + playfulnessMod * 0.4), 0, 1),
   };
 }
 
@@ -200,6 +200,16 @@ export function emotionToResponseStyle(
     mischievous: 'excited',
     protective: 'neutral',
     transcendent: 'contemplative',
+    joyful: 'happy',
+    content: 'happy',
+    tired: 'tired',
+    anxious: 'unhappy',
+    focused: 'contemplative',
+    dreaming: 'contemplative',
+    neutral: 'neutral',
+    happy: 'happy',
+    unhappy: 'unhappy',
+    excited: 'excited',
   };
 
   let baseStyle = emotionStyleMap[emotion];
@@ -386,6 +396,16 @@ export function emotionToParticleParams(
     mischievous: { count: 24, speed: 1.6, size: 2.5, intensity: 0.85, pattern: 'chaotic' },
     protective: { count: 16, speed: 0.7, size: 4, intensity: 0.8, pattern: 'spiral' },
     transcendent: { count: 40, speed: 1.0, size: 3.5, intensity: 1.0, pattern: 'spiral' },
+    joyful: { count: 28, speed: 1.4, size: 3, intensity: 0.9, pattern: 'chaotic' },
+    content: { count: 14, speed: 0.6, size: 3, intensity: 0.7, pattern: 'flowing' },
+    tired: { count: 6, speed: 0.2, size: 3.5, intensity: 0.4, pattern: 'calm' },
+    anxious: { count: 26, speed: 1.9, size: 2, intensity: 0.8, pattern: 'chaotic' },
+    focused: { count: 12, speed: 0.5, size: 3, intensity: 0.75, pattern: 'pulsing' },
+    dreaming: { count: 10, speed: 0.4, size: 4, intensity: 0.65, pattern: 'spiral' },
+    neutral: { count: 12, speed: 0.6, size: 2.5, intensity: 0.5, pattern: 'flowing' },
+    happy: { count: 22, speed: 1.3, size: 3, intensity: 0.85, pattern: 'flowing' },
+    unhappy: { count: 14, speed: 0.5, size: 3, intensity: 0.5, pattern: 'pulsing' },
+    excited: { count: 30, speed: 1.8, size: 2.5, intensity: 0.95, pattern: 'chaotic' },
   };
 
   const baseParams = emotionParams[emotion];
@@ -394,8 +414,8 @@ export function emotionToParticleParams(
   const comfortMod = comfort.overall;
 
   // Drives influence patterns
-  const explorationInfluence = drives.exploration;
-  const expressionInfluence = drives.expression;
+  const explorationInfluence = drives.exploration ?? 0.5;
+  const expressionInfluence = drives.expression ?? 0.5;
 
   return {
     particleCount: Math.round(baseParams.count * (1 + expressionInfluence * 0.3)),

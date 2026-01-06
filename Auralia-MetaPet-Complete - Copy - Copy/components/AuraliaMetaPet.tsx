@@ -18,6 +18,7 @@ import {
   DEFAULT_AUDIO_CONFIG,
   type GuardianScaleName,
   type GuardianSigilPoint,
+  type GuardianField,
   type AIBehaviorConfig,
   type SpontaneousBehavior,
   type InteractionResponse,
@@ -46,9 +47,7 @@ type AuraRipple = { id: number; x: number; y: number; radius: number; life: numb
 type FormKey = 'radiant' | 'meditation' | 'sage' | 'vigilant' | 'celestial' | 'wild';
 type Form = { name: string; baseColor: string; primaryGold: string; secondaryGold: string; tealAccent: string; eyeColor: string; glowColor: string; description: string; };
 type BondHistoryEntry = { timestamp: number; bond: number; event: string; };
-type MiniGameType = 'sigilPattern' | 'fibonacciTrivia' | 'snake' | 'tetris' | null;
-type PatternChallenge = { sequence: number[]; userSequence: number[]; active: boolean; };
-type TriviaQuestion = { question: string; answer: number; options: number[]; };
+type MiniGameType = 'snake' | 'tetris' | null;
 
 // ===== MOSSPRIMESEED CORE =====
 const RED = "113031491493585389543778774590997079619617525721567332336510";
@@ -142,25 +141,6 @@ const initField = (seedName: string = "AURALIA") => {
   return { seed: seedName, red, black, blue, ring, pulse, hash, prng, fib, lucas };
 };
 
-// ===== MINI-GAME HELPERS =====
-const generateFibonacciTrivia = (field: Field): TriviaQuestion => {
-  const questions = [
-    { n: 7, question: "What is the 7th Fibonacci number?", answer: Number(field.fib(7)) },
-    { n: 10, question: "What is the 10th Fibonacci number?", answer: Number(field.fib(10)) },
-    { n: 8, question: "What is the 8th Lucas number?", answer: Number(field.lucas(8)) },
-    { n: 6, question: "What is the 6th Lucas number?", answer: Number(field.lucas(6)) },
-    { n: 12, question: "What is the 12th Fibonacci number?", answer: Number(field.fib(12)) }
-  ];
-
-  const q = questions[Math.floor(field.prng() * questions.length)];
-  const wrong1 = q.answer + Math.floor(field.prng() * 20) - 10;
-  const wrong2 = q.answer * 2;
-  const wrong3 = Math.floor(q.answer / 2);
-
-  const options = [q.answer, wrong1, wrong2, wrong3].sort(() => field.prng() - 0.5);
-
-  return { question: q.question, answer: q.answer, options };
-};
 
 // ===== MAIN COMPONENT =====
 const AuraliaMetaPet: React.FC = () => {
@@ -208,10 +188,9 @@ const AuraliaMetaPet: React.FC = () => {
   const [timeOfDay, setTimeOfDay] = useState<'dawn' | 'day' | 'dusk' | 'night'>(() => getTimeOfDay());
 
   const [currentGame, setCurrentGame] = useState<MiniGameType>(null);
-  const [patternChallenge, setPatternChallenge] = useState<PatternChallenge>({ sequence: [], userSequence: [], active: false });
-  const [triviaQuestion, setTriviaQuestion] = useState<TriviaQuestion | null>(null);
   const [audioScale, setAudioScale] = useState<ScaleName>('harmonic');
   const [highContrast, setHighContrast] = useState<boolean>(false);
+  const [zodiacRotation, setZodiacRotation] = useState<number>(0);
   const [offspring, setOffspring] = useState<Offspring[]>([]);
   const [breedingPartner, setBreedingPartner] = useState<string>('');
   const [selectedOffspring, setSelectedOffspring] = useState<number | null>(null);
@@ -248,10 +227,8 @@ const AuraliaMetaPet: React.FC = () => {
     stats,
     effectiveScale,
     {
-      volume: masterVolume,
-      muted: audioMuted,
-      aiMode: 'idle',
-      audioConfig: DEFAULT_AUDIO_CONFIG,
+      ...DEFAULT_AUDIO_CONFIG,
+      masterVolume: masterVolume,
     }
   );
 
@@ -325,9 +302,12 @@ const AuraliaMetaPet: React.FC = () => {
   }, [bond]);
 
   const handleWhisper = useCallback((text: string) => setWhisper({ text, key: Date.now() }), []);
-  const handleFocusChange = useCallback((target: SigilPoint | null) => setAiFocus(target), []);
-  const handleDreamComplete = useCallback((insight: string) => {
+  const handleFocusChange = useCallback((sigilId: number | null) => {
+    setAiFocus(null); // Simplified - just clear focus for now
+  }, []);
+  const handleDreamComplete = useCallback(() => {
     const newDreamCount = dreamCount + 1;
+    const insight = "A dream vision appears...";
     setDreamCount(newDreamCount);
     addToBondHistory(`Dream #${newDreamCount}: ${insight}`);
 
@@ -348,22 +328,24 @@ const AuraliaMetaPet: React.FC = () => {
   }, [dreamCount, addToBondHistory, energy, curiosity, bond, activatedPoints]);
 
   // Handler for AI play action
-  const handleAIPlay = useCallback((targetIndex: number) => {
+  const handleAIPlay = useCallback(() => {
     if (audioEnabled && !audioMuted) {
-      playNote(targetIndex, 0.6);
+      playNote(Math.floor(Math.random() * 7), 0.6);
     }
   }, [audioEnabled, audioMuted, playNote]);
 
   // Handler for spontaneous behaviors - creates visual/audio feedback
   const handleSpontaneous = useCallback((behavior: SpontaneousBehavior) => {
+    if (!behavior) return;
+
     // Create visual effects based on behavior type
     const centerX = 200;
     const centerY = 210;
 
     // Intensity affects the size and number of effects
-    const intensityMultiplier = behavior.intensity || 0.5;
+    const intensityMultiplier = 0.5;
 
-    switch (behavior.type) {
+    switch (behavior) {
       case 'pulse': {
         // Multiple ripples based on energy
         const rippleCount = Math.ceil(1 + (energy / 50) * intensityMultiplier);
@@ -474,16 +456,16 @@ const AuraliaMetaPet: React.FC = () => {
 
     // Enhanced audio feedback based on behavior and stats
     if (audioEnabled && !audioMuted) {
-      if (behavior.type === 'giggle') {
+      if (behavior === 'giggle') {
         // Play ascending notes
         [2, 4, 6].forEach((note, i) =>
           setTimeout(() => playNote(note, 0.25), i * 100)
         );
-      } else if (behavior.type === 'pulse' && energy > 60) {
+      } else if (behavior === 'pulse' && energy > 60) {
         playNote(Math.floor(field.prng() * 7), 0.35);
-      } else if (behavior.type === 'startle') {
+      } else if (behavior === 'startle') {
         playNote(0, 0.5);
-      } else if (behavior.type === 'shimmer' && bond > 60) {
+      } else if (behavior === 'shimmer' && bond > 60) {
         [1, 3, 5, 7].forEach((note, i) =>
           setTimeout(() => playNote(note % 7, 0.15), i * 80)
         );
@@ -571,6 +553,14 @@ const AuraliaMetaPet: React.FC = () => {
     return () => clearInterval(interval);
   }, []);
 
+  // Zodiac band rotation animation
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setZodiacRotation((prev) => (prev + 0.5) % 360);
+    }, 50);
+    return () => clearInterval(interval);
+  }, []);
+
   // 7 Chakra Evolution progression
   useEffect(() => {
     const tierInterval = setInterval(() => {
@@ -608,9 +598,11 @@ const AuraliaMetaPet: React.FC = () => {
       const angle = (Number((h >> BigInt(i * 8)) & 0xFFn) / 255) * Math.PI * 2;
       const radius = 15 + (Number((h >> BigInt(i * 8 + 4)) & 0xFn) / 15) * 10;
       points.push({
+        id: i,
         x: 200 + Math.cos(angle) * radius,
         y: 145 + Math.sin(angle) * radius,
-        hash: (h >> BigInt(i * 8)).toString(16).slice(0, 4)
+        angle: angle,
+        radius: radius
       });
     }
     return points;
@@ -618,27 +610,33 @@ const AuraliaMetaPet: React.FC = () => {
 
   const sigilPoints = useMemo(() => generateSigil(seedName), [seedName, generateSigil]);
 
-  const aiState = useGuardianAI(field, sigilPoints, handleWhisper, handleFocusChange, handleDreamComplete, {
+  const guardianField: GuardianField = useMemo(() => ({
+    width: 400,
+    height: 400,
+    centerX: 200,
+    centerY: 200
+  }), []);
+
+  const aiState = useGuardianAI(guardianField, sigilPoints, handleWhisper, handleFocusChange, handleDreamComplete, {
     config: aiConfig,
     stats,
     onPlay: handleAIPlay,
-    onSpontaneous: handleSpontaneous,
   });
 
   // Handle interaction reactions with visual feedback
   const handleInteractionReaction = useCallback((response: InteractionResponse) => {
-    // Apply visual effect based on reaction
-    const { reaction } = response;
+    // Apply visual effect based on interaction type
+    const { type, intensity } = response;
 
-    // Build annoyance based on reaction type
-    if (reaction.type === 'annoy' || reaction.type === 'fear') {
-      setAnnoyanceLevel(prev => Math.min(100, prev + 15 * reaction.intensity));
+    // Build annoyance based on interaction type
+    if (type === 'shake' || type === 'grab') {
+      setAnnoyanceLevel(prev => Math.min(100, prev + 15 * intensity));
 
       // Create squish deformation effect
       setOrbDeformation({
         x: (Math.random() - 0.5) * 20,
         y: (Math.random() - 0.5) * 20,
-        intensity: reaction.intensity
+        intensity: intensity
       });
 
       setIsBeingSquished(true);
@@ -657,83 +655,42 @@ const AuraliaMetaPet: React.FC = () => {
           }, i * 50);
         }
       }
-    } else if (reaction.type === 'delight' || reaction.type === 'excitement') {
+    } else if (type === 'pet' || type === 'tickle') {
       // Reduce annoyance on positive interactions
       setAnnoyanceLevel(prev => Math.max(0, prev - 5));
 
       // Create bouncy deformation
       setOrbDeformation({
         x: 0,
-        y: -10 * reaction.intensity,
-        intensity: reaction.intensity * 0.5
+        y: -10 * intensity,
+        intensity: intensity * 0.5
       });
-    } else if (reaction.type === 'startle') {
-      // Slight annoyance from startles
+    } else if (type === 'poke') {
+      // Slight annoyance from pokes
       setAnnoyanceLevel(prev => Math.min(100, prev + 5));
     }
 
-    // Create appropriate visual feedback
-    switch (reaction.visualEffect) {
-      case 'bloom':
-      case 'glow':
-        setAuraRipples(prev => [...prev, {
-          id: Date.now(),
-          x: aiState.position.x * 400,
-          y: aiState.position.y * 400,
-          radius: 20,
+    // Create appropriate visual feedback based on type
+    if (type === 'pet' || type === 'tickle') {
+      setAuraRipples(prev => [...prev, {
+        id: Date.now(),
+        x: aiState.position.x * 400,
+        y: aiState.position.y * 400,
+        radius: 20,
+        life: 1,
+        color: '#f472b6',
+      }]);
+    } else if (type === 'shake' || type === 'grab') {
+      // Multiple scattered particles for harsh interactions
+      for (let i = 0; i < 5; i++) {
+        const angle = (i / 5) * Math.PI * 2;
+        setCrackles(prev => [...prev, {
+          id: Date.now() + i,
+          x: aiState.position.x * 400 + Math.cos(angle) * 20,
+          y: aiState.position.y * 400 + Math.sin(angle) * 20,
           life: 1,
-          color: '#f472b6',
         }]);
-        break;
-      case 'shimmer':
-      case 'flicker':
-        // Multiple quick pulses
-        for (let i = 0; i < 3; i++) {
-          setTimeout(() => {
-            setSigilPulses(prev => [...prev, {
-              id: Date.now() + i,
-              x: aiState.position.x * 400 + (Math.random() - 0.5) * 30,
-              y: aiState.position.y * 400 + (Math.random() - 0.5) * 30,
-              life: 1,
-              color: '#22d3ee',
-            }]);
-          }, i * 100);
-        }
-        break;
-      case 'spiral':
-      case 'wave':
-        // Expanding ring
-        setAuraRipples(prev => [...prev, {
-          id: Date.now(),
-          x: aiState.position.x * 400,
-          y: aiState.position.y * 400,
-          radius: 10,
-          life: 1,
-          color: '#f4b942',
-        }]);
-        break;
-      case 'contract':
-        // Inward pulse effect (small ripple)
-        setSigilPulses(prev => [...prev, {
-          id: Date.now(),
-          x: aiState.position.x * 400,
-          y: aiState.position.y * 400,
-          life: 0.5,
-          color: '#64748b',
-        }]);
-        break;
-      case 'fragment':
-        // Multiple scattered particles
-        for (let i = 0; i < 5; i++) {
-          const angle = (i / 5) * Math.PI * 2;
-          setCrackles(prev => [...prev, {
-            id: Date.now() + i,
-            x: aiState.position.x * 400 + Math.cos(angle) * 20,
-            y: aiState.position.y * 400 + Math.sin(angle) * 20,
-            life: 1,
-          }]);
-        }
-        break;
+      }
     }
   }, [aiState.position, annoyanceLevel]);
 
@@ -757,7 +714,7 @@ const AuraliaMetaPet: React.FC = () => {
   }, []);
 
   // Physical interaction handlers
-  const interaction = useGuardianInteraction(aiState, stats, field, {
+  const interaction = useGuardianInteraction(aiState, stats, guardianField, {
     onReaction: handleInteractionReaction,
     onWhisper: handleWhisper,
     onStatChange: handleInteractionStatChange,
@@ -857,7 +814,7 @@ const AuraliaMetaPet: React.FC = () => {
       // Detect petting (slow horizontal movement) - throttle to 200ms
       if (speed > 0.1 && speed < 2.5 && Math.abs(vx) > Math.abs(vy) * 1.5) {
         if (now - lastPetTimeRef.current > 200) {
-          interaction.handlePet({ x, y }, Math.min(1, speed / 2));
+          interaction.handlePet(x, Math.min(1, speed / 2));
           lastPetTimeRef.current = now;
         }
       }
@@ -1177,28 +1134,6 @@ const AuraliaMetaPet: React.FC = () => {
       }
     }, 300);
 
-    // If pattern game is active, handle differently
-    if (patternChallenge.active) {
-      const newUserSequence = [...patternChallenge.userSequence, index];
-      setPatternChallenge(prev => ({ ...prev, userSequence: newUserSequence }));
-
-      if (newUserSequence.length === patternChallenge.sequence.length) {
-        const success = newUserSequence.every((v, i) => v === patternChallenge.sequence[i]);
-        if (success) {
-          setBond(b => Math.min(100, b + 10));
-          setCuriosity(c => Math.min(100, c + 5));
-          setGamesWon(prev => prev + 1);
-          addToBondHistory(`Won pattern game! Sequence: ${patternChallenge.sequence.map(i => i + 1).join(', ')}`);
-          handleWhisper("Perfect resonance! The pattern is revealed.");
-        } else {
-          handleWhisper("The pattern eludes you... Try again.");
-        }
-        setPatternChallenge({ sequence: [], userSequence: [], active: false });
-        setCurrentGame(null);
-      }
-      return;
-    }
-
     if (!activatedPoints.has(index)) {
       setBond(b => Math.min(100, b + 5));
       setActivatedPoints(prev => new Set(prev).add(index));
@@ -1225,49 +1160,6 @@ const AuraliaMetaPet: React.FC = () => {
 
   const handleAvatarPointerUp = () => {
     setHoverIntensity((h) => Math.max(0.15, h * 0.6));
-  };
-
-  const startPatternGame = () => {
-    const length = 3 + Math.floor(field.prng() * 3); // 3-5 points
-    const sequence: number[] = [];
-    for (let i = 0; i < length; i++) {
-      sequence.push(Math.floor(field.prng() * 7));
-    }
-    setPatternChallenge({ sequence, userSequence: [], active: true });
-    setCurrentGame('sigilPattern');
-    handleWhisper(`Memorize this pattern: ${sequence.map(i => i + 1).join(' → ')}`);
-
-    // Play the sequence
-    if (audioEnabled) {
-      sequence.forEach((note, i) => setTimeout(() => playNote(note, 0.5), i * 600));
-    }
-  };
-
-  const startTriviaGame = () => {
-    const question = generateFibonacciTrivia(field);
-    setTriviaQuestion(question);
-    setCurrentGame('fibonacciTrivia');
-    handleWhisper(question.question);
-  };
-
-  const answerTrivia = (answer: number) => {
-    if (!triviaQuestion) return;
-
-    if (answer === triviaQuestion.answer) {
-      setBond(b => Math.min(100, b + 8));
-      setCuriosity(c => Math.min(100, c + 12));
-      setGamesWon(prev => prev + 1);
-      addToBondHistory(`Answered trivia correctly: ${triviaQuestion.answer}`);
-      handleWhisper("Wisdom flows through the numbers!");
-      if (audioEnabled) {
-        [0, 2, 4].forEach((note, i) => setTimeout(() => playNote(note, 0.3), i * 150));
-      }
-    } else {
-      handleWhisper(`Not quite. The answer was ${triviaQuestion.answer}.`);
-    }
-
-    setTriviaQuestion(null);
-    setCurrentGame(null);
   };
 
   const startSnakeGame = useCallback(() => {
@@ -1665,6 +1557,45 @@ const AuraliaMetaPet: React.FC = () => {
                         {d}
                       </text>
                     ))}
+                  </g>
+
+                  {/* Zodiac Band */}
+                  <g transform={`translate(200, 200) rotate(${zodiacRotation})`} opacity="0.6">
+                    {/* Zodiac symbols */}
+                    {['♈', '♉', '♊', '♋', '♌', '♍', '♎', '♏', '♐', '♑', '♒', '♓'].map((symbol, i) => {
+                      const angle = (i * 30 - 90) * (Math.PI / 180);
+                      const radius = 180;
+                      const x = Math.cos(angle) * radius;
+                      const y = Math.sin(angle) * radius;
+                      return (
+                        <text
+                          key={i}
+                          x={x}
+                          y={y}
+                          fontSize="16"
+                          fill={currentForm.primaryGold}
+                          textAnchor="middle"
+                          dominantBaseline="middle"
+                          opacity={0.7 + Math.sin((zodiacRotation + i * 30) * Math.PI / 180) * 0.3}
+                          style={{
+                            filter: `drop-shadow(0 0 4px ${currentForm.glowColor})`,
+                          }}
+                        >
+                          {symbol}
+                        </text>
+                      );
+                    })}
+                    {/* Orbital ring */}
+                    <circle
+                      cx="0"
+                      cy="0"
+                      r="180"
+                      fill="none"
+                      stroke={currentForm.primaryGold}
+                      strokeWidth="0.5"
+                      strokeDasharray="4,4"
+                      opacity="0.3"
+                    />
                   </g>
 
                   <g>
@@ -2165,22 +2096,6 @@ const AuraliaMetaPet: React.FC = () => {
               <h3 className="text-xl font-semibold text-yellow-400 mb-4">Sacred Games</h3>
               <div className="grid grid-cols-2 gap-3">
                 <button
-                  onClick={startPatternGame}
-                  disabled={currentGame !== null}
-                  className="px-3 py-2 bg-gradient-to-r from-teal-600 to-cyan-600 hover:from-teal-500 hover:to-cyan-500 disabled:from-gray-600 disabled:to-gray-700 disabled:cursor-not-allowed rounded-lg font-medium transition-all text-sm"
-                  aria-label="Start sigil pattern matching game"
-                >
-                  🔮 Sigil Pattern
-                </button>
-                <button
-                  onClick={startTriviaGame}
-                  disabled={currentGame !== null}
-                  className="px-3 py-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 disabled:from-gray-600 disabled:to-gray-700 disabled:cursor-not-allowed rounded-lg font-medium transition-all text-sm"
-                  aria-label="Start Fibonacci trivia quiz"
-                >
-                  🧮 Number Quiz
-                </button>
-                <button
                   onClick={startSnakeGame}
                   disabled={currentGame !== null}
                   className="px-3 py-2 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 disabled:from-gray-600 disabled:to-gray-700 disabled:cursor-not-allowed rounded-lg font-medium transition-all text-sm"
@@ -2201,34 +2116,6 @@ const AuraliaMetaPet: React.FC = () => {
                 <p className="text-xs text-center text-green-400 mt-3">
                   Games Won: {gamesWon}
                 </p>
-              )}
-
-              {patternChallenge.active && (
-                <div className="mt-4 p-3 bg-purple-900/20 border border-purple-500/30 rounded-lg">
-                  <p className="text-sm text-purple-300 mb-2">
-                    Pattern: {patternChallenge.sequence.map(i => i + 1).join(' → ')}
-                  </p>
-                  <p className="text-xs text-gray-400">
-                    Your input ({patternChallenge.userSequence.length}/{patternChallenge.sequence.length}): {patternChallenge.userSequence.map(i => i + 1).join(' → ')}
-                  </p>
-                </div>
-              )}
-
-              {triviaQuestion && (
-                <div className="mt-4 p-3 bg-indigo-900/20 border border-indigo-500/30 rounded-lg">
-                  <p className="text-sm text-indigo-200 mb-3 font-medium">{triviaQuestion.question}</p>
-                  <div className="grid grid-cols-2 gap-2">
-                    {triviaQuestion.options.map((opt) => (
-                      <button
-                        key={opt}
-                        onClick={() => answerTrivia(opt)}
-                        className="px-3 py-2 bg-indigo-700/40 hover:bg-indigo-600/60 rounded transition-colors text-sm"
-                      >
-                        {opt}
-                      </button>
-                    ))}
-                  </div>
-                </div>
               )}
 
               {currentGame === 'snake' && (

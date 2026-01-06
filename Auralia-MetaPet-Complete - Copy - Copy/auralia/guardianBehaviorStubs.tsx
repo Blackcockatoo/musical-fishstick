@@ -119,7 +119,9 @@ export type ExpandedEmotionalState =
   | 'happy'
   | 'unhappy'
   | 'excited'
-  | 'overwhelmed';
+  | 'overwhelmed'
+  | 'melancholic'
+  | 'transcendent';
 
 export interface GBSPState {
   drives: GuardianDrive;
@@ -220,9 +222,9 @@ export function calculateComfort(drives: GuardianDrive): ComfortState {
   const driveValues = Object.values(drives);
   const avgDrive = driveValues.reduce((a, b) => a + b, 0) / driveValues.length;
 
-  const physical = Math.min(100, drives.rest * 0.5 + 50);
-  const mental = Math.min(100, drives.focus * 0.6 + 40);
-  const emotional = Math.min(100, drives.play * 0.7 + 30);
+  const physical = Math.min(100, (drives.rest ?? 0.5) * 0.5 + 50);
+  const mental = Math.min(100, (drives.focus ?? 0.5) * 0.6 + 40);
+  const emotional = Math.min(100, (drives.play ?? 0.5) * 0.7 + 30);
   const overall = Math.min(100, avgDrive);
 
   const unmetNeeds: string[] = [];
@@ -253,9 +255,9 @@ export function getExpandedEmotionalState(
 ): ExpandedEmotionalState {
   if (aiMode === 'dreaming') return 'dreaming';
   if (aiMode === 'focusing') return 'focused';
-  if (drives.play > 70) return 'playful';
+  if ((drives.play ?? 0) > 70) return 'playful';
   if (vitals.energy < 30) return 'tired';
-  if (drives.explore > 70) return 'curious';
+  if ((drives.explore ?? 0) > 70) return 'curious';
   if (vitals.bond > 70) return 'joyful';
   if (comfort.overall > 60) return 'content';
   if (comfort.overall < 40) return 'anxious';
