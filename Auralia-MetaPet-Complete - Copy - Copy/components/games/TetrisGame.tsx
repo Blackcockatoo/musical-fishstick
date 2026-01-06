@@ -260,32 +260,34 @@ export function TetrisGame({
   );
 
   return (
-    <div className="mt-4 p-3 bg-indigo-900/20 border border-indigo-500/30 rounded-lg">
-      <div className="flex justify-between items-center mb-2">
+    <div className="mt-4 p-4 bg-gradient-to-br from-indigo-950/70 via-slate-950/50 to-black border border-indigo-500/40 rounded-xl shadow-lg">
+      <div className="flex justify-between items-center mb-3">
         <div className="flex items-center gap-3">
-          <p className="text-sm text-indigo-300 font-medium">Tetris Game</p>
-          <p className="text-sm text-indigo-400">Score: {score}</p>
-          <p className="text-xs text-indigo-200">High: {highScore}</p>
-          {paused && <span className="text-xs text-yellow-300">Paused</span>}
+          <p className="text-sm text-indigo-100 font-semibold flex items-center gap-2">
+            <span className="text-lg">🟦</span> Tetris Game
+          </p>
+          <p className="text-sm text-indigo-300 font-medium">Score: {score}</p>
+          <p className="text-xs text-indigo-200/90">High: {highScore}</p>
+          {paused && <span className="text-xs text-yellow-200 bg-yellow-500/10 px-2 py-0.5 rounded-full border border-yellow-300/40">Paused</span>}
         </div>
         <div className="flex gap-2">
           <button
             onClick={() => setPaused((p) => !p)}
-            className="px-2 py-1 text-xs bg-indigo-800/60 hover:bg-indigo-700/70 border border-indigo-500/40 rounded"
+            className="px-3 py-1.5 text-xs bg-indigo-800/50 hover:bg-indigo-700/70 border border-indigo-400/40 rounded-md shadow-sm transition-colors"
             aria-label="Pause or resume Tetris"
           >
             {paused ? 'Resume' : 'Pause'}
           </button>
           <button
             onClick={resetGame}
-            className="px-2 py-1 text-xs bg-indigo-800/60 hover:bg-indigo-700/70 border border-indigo-500/40 rounded"
+            className="px-3 py-1.5 text-xs bg-indigo-800/50 hover:bg-indigo-700/70 border border-indigo-400/40 rounded-md shadow-sm transition-colors"
             aria-label="Restart Tetris"
           >
             Reset
           </button>
           <button
             onClick={onClose}
-            className="px-2 py-1 text-xs bg-indigo-800/60 hover:bg-indigo-700/70 border border-indigo-500/40 rounded"
+            className="px-3 py-1.5 text-xs bg-indigo-800/50 hover:bg-indigo-700/70 border border-indigo-400/40 rounded-md shadow-sm transition-colors"
             aria-label="Close Tetris game"
           >
             Close
@@ -301,11 +303,11 @@ export function TetrisGame({
           </button>
         </div>
       ) : (
-        <div className="bg-gray-950 p-2 rounded inline-block">
+        <div className="bg-gradient-to-br from-gray-900 via-gray-950 to-black p-3 rounded-xl inline-block border border-indigo-500/30 shadow-inner">
           {board.map((row, y) => (
             <div key={y} className="flex gap-0.5">
               {row.map((cell, x) => {
-                let cellColor = cell ? '#4B5563' : '#1F2937';
+                let cellColor = cell ? '#6366F1' : '#111827';
                 for (let py = 0; py < currentPiece.shape.length; py++) {
                   for (let px = 0; px < currentPiece.shape[py].length; px++) {
                     if (currentPiece.shape[py][px] && currentPiece.x + px === x && currentPiece.y + py === y) {
@@ -316,8 +318,11 @@ export function TetrisGame({
                 return (
                   <div
                     key={`${x}-${y}`}
-                    className="w-4 h-4 rounded-sm"
-                    style={{ backgroundColor: cellColor }}
+                    className="w-5 h-5 rounded-sm border border-gray-900/60 shadow-sm"
+                    style={{
+                      backgroundColor: cellColor,
+                      boxShadow: cellColor !== '#111827' ? '0 0 8px rgba(99, 102, 241, 0.45)' : undefined,
+                    }}
                   />
                 );
               })}
@@ -326,9 +331,9 @@ export function TetrisGame({
         </div>
       )}
 
-      <div className="mt-3 flex flex-wrap items-center gap-3 text-xs text-gray-300">
-        <div className="flex items-center gap-2">
-          <label className="text-gray-400">Speed</label>
+      <div className="mt-4 flex flex-wrap items-center gap-3 text-xs text-gray-300">
+        <div className="flex items-center gap-2 bg-indigo-900/20 px-2 py-1 rounded border border-indigo-500/30">
+          <label className="text-gray-200">Speed</label>
           <input
             type="range"
             min={140}
@@ -338,9 +343,9 @@ export function TetrisGame({
             onChange={(e) => setSpeedMs(Number(e.target.value))}
             className="w-32 accent-indigo-500"
           />
-          <span>{speedMs}ms</span>
+          <span className="font-mono text-indigo-100">{speedMs}ms</span>
         </div>
-        <span>Controls: arrows / space to pause / shift for hard drop / Esc to close</span>
+        <span className="text-gray-300/80">Controls: arrows / space to pause / shift for hard drop / Esc to close</span>
       </div>
 
       <div className="mt-3 flex gap-2 justify-center text-lg">

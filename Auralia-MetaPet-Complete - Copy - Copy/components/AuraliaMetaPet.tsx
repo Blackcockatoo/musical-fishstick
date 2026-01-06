@@ -2094,22 +2094,30 @@ const AuraliaMetaPet: React.FC = () => {
 
             <div className="bg-gray-900/80 rounded-2xl p-6 border border-yellow-600/20">
               <h3 className="text-xl font-semibold text-yellow-400 mb-4">Sacred Games</h3>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <button
                   onClick={startSnakeGame}
                   disabled={currentGame !== null}
-                  className="px-3 py-2 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 disabled:from-gray-600 disabled:to-gray-700 disabled:cursor-not-allowed rounded-lg font-medium transition-all text-sm"
+                  className="group flex items-center justify-between px-4 py-3 bg-gradient-to-r from-green-700 via-emerald-600 to-emerald-500 hover:from-green-500 hover:via-emerald-500 hover:to-emerald-400 disabled:from-gray-700 disabled:via-gray-700 disabled:to-gray-700 disabled:text-gray-300 disabled:cursor-not-allowed rounded-lg font-semibold transition-all text-sm shadow-lg border border-green-300/30"
                   aria-label="Start Snake game"
                 >
-                  🐍 Snake
+                  <span className="flex items-center gap-2">
+                    <span>🐍</span>
+                    Snake
+                  </span>
+                  <span className="text-[11px] text-green-50/80 group-disabled:text-gray-300/70">Grid mastery</span>
                 </button>
                 <button
                   onClick={startTetrisGame}
                   disabled={currentGame !== null}
-                  className="px-3 py-2 bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-500 hover:to-blue-500 disabled:from-gray-600 disabled:to-gray-700 disabled:cursor-not-allowed rounded-lg font-medium transition-all text-sm"
+                  className="group flex items-center justify-between px-4 py-3 bg-gradient-to-r from-indigo-700 via-blue-600 to-sky-600 hover:from-indigo-500 hover:via-blue-500 hover:to-sky-500 disabled:from-gray-700 disabled:via-gray-700 disabled:to-gray-700 disabled:text-gray-300 disabled:cursor-not-allowed rounded-lg font-semibold transition-all text-sm shadow-lg border border-blue-300/30"
                   aria-label="Start Tetris game"
                 >
-                  🟦 Tetris
+                  <span className="flex items-center gap-2">
+                    <span>🟦</span>
+                    Tetris
+                  </span>
+                  <span className="text-[11px] text-blue-50/80 group-disabled:text-gray-300/70">Stack focus</span>
                 </button>
               </div>
               {gamesWon > 0 && (
