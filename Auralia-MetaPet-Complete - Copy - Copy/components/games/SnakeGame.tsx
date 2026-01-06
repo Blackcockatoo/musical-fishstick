@@ -177,32 +177,34 @@ export function SnakeGame({
   );
 
   return (
-    <div className="mt-4 p-3 bg-green-900/20 border border-green-500/30 rounded-lg">
-      <div className="flex justify-between items-center mb-2">
+    <div className="mt-4 p-4 bg-gradient-to-br from-green-950/70 via-gray-950/50 to-black border border-green-500/40 rounded-xl shadow-lg">
+      <div className="flex justify-between items-center mb-3">
         <div className="flex items-center gap-3">
-          <p className="text-sm text-green-300 font-medium">Snake Game</p>
-          <p className="text-sm text-green-400">Score: {score}</p>
-          <p className="text-xs text-green-200">High: {highScore}</p>
-          {paused && <span className="text-xs text-yellow-300">Paused</span>}
+          <p className="text-sm text-green-100 font-semibold flex items-center gap-2">
+            <span className="text-lg">🐍</span> Snake Game
+          </p>
+          <p className="text-sm text-green-300 font-medium">Score: {score}</p>
+          <p className="text-xs text-green-200/90">High: {highScore}</p>
+          {paused && <span className="text-xs text-yellow-200 bg-yellow-500/10 px-2 py-0.5 rounded-full border border-yellow-300/40">Paused</span>}
         </div>
         <div className="flex gap-2">
           <button
             onClick={() => setPaused((p) => !p)}
-            className="px-2 py-1 text-xs bg-green-700/40 hover:bg-green-600/60 border border-green-500/40 rounded"
+            className="px-3 py-1.5 text-xs bg-green-700/50 hover:bg-green-600/70 border border-green-400/40 rounded-md shadow-sm transition-colors"
             aria-label="Pause or resume Snake"
           >
             {paused ? 'Resume' : 'Pause'}
           </button>
           <button
             onClick={resetGame}
-            className="px-2 py-1 text-xs bg-green-700/40 hover:bg-green-600/60 border border-green-500/40 rounded"
+            className="px-3 py-1.5 text-xs bg-green-700/50 hover:bg-green-600/70 border border-green-400/40 rounded-md shadow-sm transition-colors"
             aria-label="Restart Snake"
           >
             Reset
           </button>
           <button
             onClick={onClose}
-            className="px-2 py-1 text-xs bg-green-700/40 hover:bg-green-600/60 border border-green-500/40 rounded"
+            className="px-3 py-1.5 text-xs bg-green-700/50 hover:bg-green-600/70 border border-green-400/40 rounded-md shadow-sm transition-colors"
             aria-label="Close Snake game"
           >
             Close
@@ -221,7 +223,7 @@ export function SnakeGame({
           </button>
         </div>
       ) : (
-        <div className="grid grid-cols-15 gap-0.5 bg-gray-950 p-2 rounded">
+        <div className="grid grid-cols-15 gap-1 bg-gradient-to-br from-gray-900 via-gray-950 to-black p-3 rounded-xl border border-green-500/30 shadow-inner">
           {Array.from({ length: GRID_SIZE }).map((_, y) => (
             <div key={y} className="flex gap-0.5">
               {Array.from({ length: GRID_SIZE }).map((_, x) => {
@@ -231,7 +233,15 @@ export function SnakeGame({
                 return (
                   <div
                     key={x}
-                    className={`w-3 h-3 rounded-sm ${isHead ? 'bg-green-400' : snake ? 'bg-green-600' : isFood ? 'bg-red-500' : 'bg-gray-800'}`}
+                    className={`w-5 h-5 rounded-sm border border-gray-900/60 shadow-sm ${
+                      isHead
+                        ? 'bg-green-300 shadow-[0_0_10px_rgba(74,222,128,0.55)]'
+                        : snake
+                        ? 'bg-green-600'
+                        : isFood
+                        ? 'bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.6)]'
+                        : 'bg-gray-800'
+                    }`}
                   />
                 );
               })}
@@ -240,9 +250,9 @@ export function SnakeGame({
         </div>
       )}
 
-      <div className="mt-3 flex flex-wrap items-center gap-3 text-xs text-gray-300">
-        <div className="flex items-center gap-2">
-          <label className="text-gray-400">Speed</label>
+      <div className="mt-4 flex flex-wrap items-center gap-3 text-xs text-gray-300">
+        <div className="flex items-center gap-2 bg-green-900/20 px-2 py-1 rounded border border-green-500/30">
+          <label className="text-gray-300">Speed</label>
           <input
             type="range"
             min={100}
@@ -252,9 +262,9 @@ export function SnakeGame({
             onChange={(e) => setSpeedMs(Number(e.target.value))}
             className="w-32 accent-green-500"
           />
-          <span>{speedMs}ms</span>
+          <span className="font-mono text-green-200">{speedMs}ms</span>
         </div>
-        <span>Controls: arrows / space to pause / Esc to close</span>
+        <span className="text-gray-300/80">Controls: arrows / space to pause / Esc to close</span>
       </div>
 
       <div className="mt-3 flex gap-2 justify-center text-lg">
@@ -262,7 +272,7 @@ export function SnakeGame({
           <button
             key={ctrl.label}
             onClick={ctrl.onPress}
-            className="w-10 h-10 bg-green-800/40 hover:bg-green-700/60 rounded border border-green-500/30"
+            className="w-10 h-10 bg-green-800/40 hover:bg-green-700/60 rounded border border-green-500/30 shadow-sm transition-colors"
             aria-label={`Move ${ctrl.label}`}
           >
             {ctrl.label}
