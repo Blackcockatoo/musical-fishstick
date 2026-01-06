@@ -1,0 +1,21 @@
+{
+  "expo": {
+    "name": "Auralia MetaPet",
+    "slug": "auralia-metapet",
+    "version": "1.0.0",
+    "scheme": "auraliametapet",
+    "orientation": "portrait",
+    "jsEngine": "hermes",
+    "platforms": ["ios", "android"],
+    "newArchEnabled": true,
+    "android": {
+      "package": "com.auraliametapet",
+      "permissions": [
+        "VIBRATE",
+        "SYSTEM_ALERT_WINDOW",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE"
+      ]
+    }
+  }
+}

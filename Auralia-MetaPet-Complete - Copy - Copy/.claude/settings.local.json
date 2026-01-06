@@ -1,0 +1,37 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dir \"C:\\\\Users\\\\Tom\\\\.claude\\\\plans\")",
+      "Bash(npm install)",
+      "Bash(npx tsc:*)",
+      "Bash(npm run dev:*)",
+      "Bash(curl:*)",
+      "Bash(npm install:*)",
+      "Bash(npm run lint)",
+      "Bash(npm audit:*)",
+      "Bash(del \".eslintrc.json\")",
+      "Bash(npx eslint:*)",
+      "Bash(dir:*)",
+      "Bash(move:*)",
+      "Bash(npm run expo:start:*)",
+      "Bash(netstat:*)",
+      "Bash(npm outdated:*)",
+      "Bash(npx expo-doctor)",
+      "Bash(npx expo install:*)",
+      "Bash(npx next dev)",
+      "Bash(findstr:*)",
+      "Bash(taskkill /F /PID 35880)",
+      "Bash(taskkill //F //PID 35880)",
+      "Bash(del \".next\\\\dev\\\\lock\")",
+      "Bash(find:*)",
+      "Bash(tree:*)",
+      "Bash(rm:*)",
+      "Bash(ls:*)",
+      "Bash(taskkill /F /PID 23432)",
+      "Bash(taskkill //F //PID 23432)",
+      "Bash(taskkill /F /PID 76188)",
+      "Bash(taskkill //F //PID 76188)",
+      "Bash(taskkill:*)"
+    ]
+  }
+}
